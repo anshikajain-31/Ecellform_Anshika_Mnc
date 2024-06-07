@@ -71,62 +71,61 @@ const Contact = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      alert("Please correct the errors in the form");
-      return;
+        alert("Please correct the errors in the form");
+        return;
     }
 
     try {
-      // Initialize variables for Firebase operations
-      let uploadedImageUrl = "";
+        let uploadedImageUrl = "";
 
-      // If there's an image, upload it to Firebase Storage
-      if (selectedImage) {
-        const storageRef = ref(storage, `images/${selectedImage.name}`);
-        const uploadTask = uploadBytesResumable(storageRef, selectedImage);
+        if (selectedImage) {
+            const storageRef = ref(storage, `images/${selectedImage.name}`);
+            const uploadTask = uploadBytesResumable(storageRef, selectedImage);
 
-        // Get the image URL after the upload is complete
-        uploadTask.on(
-          "state_changed",
-          (snapshot) => {
-            // Progress monitoring (optional)
-          },
-          (error) => {
-            console.error("Error uploading image: ", error);
-          },
-          async () => {
-            // Get the download URL after successful upload
-            uploadedImageUrl = await getDownloadURL(uploadTask.snapshot.ref);
-          }
-        );
-      }
+            // Wait for the upload to complete and get the download URL
+            await new Promise((resolve, reject) => {
+                uploadTask.on(
+                    "state_changed",
+                    (snapshot) => {
+                        // Optional: monitor upload progress
+                    },
+                    (error) => {
+                        console.error("Error uploading image: ", error);
+                        reject(error);
+                    },
+                    async () => {
+                        uploadedImageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                        resolve();
+                    }
+                );
+            });
+        }
 
-      // Save form data to Firestore
-      await addDoc(collection(db, "contacts"), {
-        ...formData,
-        imageUrl: uploadedImageUrl, // Store the uploaded image URL
-        createdAt: new Date(),
-      });
+        // Save form data to Firestore
+        await addDoc(collection(db, "contacts"), {
+            ...formData,
+            imageUrl: uploadedImageUrl,
+            createdAt: new Date(),
+        });
 
-      alert("Form submitted successfully!");
+        alert("Form submitted successfully!");
 
-      // Clear form after submission
-      setFormData({
-        name: "",
-        email: "",
-        contactNo: "",
-        branch: "",
-        message: "",
-      });
-      setSelectedImage(null);
-      setImageUrl("");
+        // Clear form after submission
+        setFormData({
+            name: "",
+            email: "",
+            contactNo: "",
+            branch: "",
+            message: "",
+        });
+        setSelectedImage(null);
+        setImageUrl("");
 
     } catch (error) {
-      console.error("Error submitting form: ", error);
-      alert("Error submitting form");
+        console.error("Error submitting form: ", error);
+        alert("Error submitting form");
     }
-  };
-
-
+};
 
   return (
     <>
@@ -137,26 +136,26 @@ const Contact = () => {
         </div>
 
         <label className="label">Name</label>
-        <input type="text" placeholder="Name" required/>
+        <input type="text" placeholder="Name" value={1} required/>
 
         <label className="label">Email</label>
-        <input type="email" placeholder="Email" required/>
+        <input type="email" placeholder="Email" value={2} required/>
 
         <label className="label">Contact No.</label>
-        <input type="text" placeholder="Contact No." required/>
+        <input type="text" placeholder="Contact No." value={3} required/>
 
         <label className="label" required>Branch</label>
-        <select>
+        <select value={4}>
           <option value="">Select Branch</option>
           <option value="">Mathematics & Computing</option>
           <option value="">Computer Science & Engg.</option>
           <option value="">Electrical Engineering</option>
           <option value="">Electronics Engineering</option>
           <option value="">Mechanical Engineering</option>
-          <option value="MNC">Chemical Engineering</option>
-          <option value="MNC">Ceramic Engineering</option>
-          <option value="MNC">Pharmaceutical Engineering</option>
-          <option value="MNC">Civil Engineering</option>
+          <option value="">Chemical Engineering</option>
+          <option value="">Ceramic Engineering</option>
+          <option value="">Pharmaceutical Engineering</option>
+          <option value="">Civil Engineering</option>
 
         </select>
 
