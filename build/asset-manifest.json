@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/static/css/main.24e3cf76.css",
+    "main.js": "/static/js/main.c58aacf1.js",
+    "static/media/Ecell-logo.png": "/static/media/Ecell-logo.f11631b2973d29e3e25c.png",
+    "index.html": "/index.html",
+    "main.24e3cf76.css.map": "/static/css/main.24e3cf76.css.map",
+    "main.c58aacf1.js.map": "/static/js/main.c58aacf1.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.24e3cf76.css",
+    "static/js/main.c58aacf1.js"
+  ]
+}
