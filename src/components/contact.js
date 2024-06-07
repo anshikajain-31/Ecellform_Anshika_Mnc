@@ -1,177 +1,147 @@
-
-
-
 import React, { useState } from "react";
 import '../App.css';
-import ecellLogo from '../img/Ecell-logo.png'; 
+import ecellLogo from '../img/Ecell-logo.png';
 import { storage, db } from '../firebase';
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { collection, addDoc } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 const Contact = () => {
 
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        contactNo: "",
-        branch: "",
-      });
-      const [errors, setErrors] = useState({});
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [imageUrl, setImageUrl] = useState("");
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [contactNo, setContactNo] = useState("");
+    const [Branch, setBranch] = useState("");
+    const [image, setImage] = useState(null);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-      
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedImage(file);
-      setImageUrl(URL.createObjectURL(file));
-    }
-  };
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+    const userCollectionRef = collection(db, "contactdata")
 
-  // Validate contact number format (10 digits)
-  const validateContactNo = (contactNo) => {
-    const contactNoRegex = /^\d{10}$/;
-    return contactNoRegex.test(contactNo);
-  };
+    const validateEmail = (email) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase());
+    };
+    const validatePhoneNumber = (contactNo) => {
+        // Regular expression to validate phone number
+        const re = /^\d{10}$/;
+        return re.test(contactNo);
+    };
 
-  // Validate form fields
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.name) newErrors.name = "Name is required";
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = "Invalid email format";
-    }
-    if (!formData.contactNo) {
-      newErrors.contactNo = "Contact No. is required";
-    } else if (!validateContactNo(formData.contactNo)) {
-      newErrors.contactNo = "Invalid contact number";
-    }
-    if (!formData.branch) newErrors.branch = "Branch is required";
-    if (!formData.message) newErrors.message = "Message is required";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-        alert("Please correct the errors in the form");
-        return;
-    }
-
-    try {
-        let uploadedImageUrl = "";
-
-        if (selectedImage) {
-            const storageRef = ref(storage, `images/${selectedImage.name}`);
-            const uploadTask = uploadBytesResumable(storageRef, selectedImage);
-
-            // Wait for the upload to complete and get the download URL
-            await new Promise((resolve, reject) => {
-                uploadTask.on(
-                    "state_changed",
-                    (snapshot) => {
-                        // Optional: monitor upload progress
-                    },
-                    (error) => {
-                        console.error("Error uploading image: ", error);
-                        reject(error);
-                    },
-                    async () => {
-                        uploadedImageUrl = await getDownloadURL(uploadTask.snapshot.ref);
-                        resolve();
-                    }
-                );
-            });
+    const handleImageChange = (event) => {
+        if (event.target.files[0]) {
+            setImage(event.target.files[0]);
         }
-
-        // Save form data to Firestore
-        await addDoc(collection(db, "contacts"), {
-            ...formData,
-            imageUrl: uploadedImageUrl,
-            createdAt: new Date(),
-        });
-
-        alert("Form submitted successfully!");
-
-        // Clear form after submission
-        setFormData({
-            name: "",
-            email: "",
-            contactNo: "",
-            branch: "",
-            message: "",
-        });
-        setSelectedImage(null);
-        setImageUrl("");
-
-    } catch (error) {
-        console.error("Error submitting form: ", error);
-        alert("Error submitting form");
     }
-};
 
-  return (
-    <>
-      <form className="form">
-        <div className="heading">
-          <img src={ecellLogo} alt="E-Cell Logo" />
-          <h1>Contact Form</h1>
-        </div>
 
-        <label className="label">Name</label>
-        <input type="text" placeholder="Name" value={1} required/>
 
-        <label className="label">Email</label>
-        <input type="email" placeholder="Email" value={2} required/>
+    const handleSubmit = (event) => {
+        event.preventDefault();
 
-        <label className="label">Contact No.</label>
-        <input type="text" placeholder="Contact No." value={3} required/>
+        if (!validateEmail(email)) {
+            alert("Please enter a valid email address");
+            return;
+        }
+        if (!validatePhoneNumber(contactNo)) {
+            alert("Please enter a valid Contact no.");
+            return;
+        }
+        const storageRef = ref(storage, 'images/${images.name');
+        uploadBytes(storageRef, image)
+            .then((snapshot) => {
+                console.log('image uploaded successfully', snapshot);
+                return getDownloadURL(snapshot.ref);
+            })
+            .then((DownloadURL) => {
+                const formData = { name, email, contactNo, Branch, image: DownloadURL };
+                // addDoc(userCollectionRef, {
+                //     name: name,
+                //     email: email,
+                //     contactNo: contactNo,
+                //     Branch: Branch,
+                // })
+                return addDoc(userCollectionRef,formData);
+            })
+                    .then(() => {
+                        alert("Data submitted successfully!");
+                        setName("");
+                        setEmail("");
+                        setContactNo("");
+                        setBranch("");
+                        setImage(null);
+                    })
+                    .catch((error) => {
+                        console.error("error adding document:", error);
+                        alert("error submitting form");
+                    });
+                };
+            
 
-        <label className="label" required>Branch</label>
-        <select value={4}>
-          <option value="">Select Branch</option>
-          <option value="">Mathematics & Computing</option>
-          <option value="">Computer Science & Engg.</option>
-          <option value="">Electrical Engineering</option>
-          <option value="">Electronics Engineering</option>
-          <option value="">Mechanical Engineering</option>
-          <option value="">Chemical Engineering</option>
-          <option value="">Ceramic Engineering</option>
-          <option value="">Pharmaceutical Engineering</option>
-          <option value="">Civil Engineering</option>
 
-        </select>
+    
 
-        <label className="label">Upload Image</label>
-        <input type="file" accept="image/*" onChange={handleImageChange} />
+    return (
+        <>
+            <form className="form">
+                <div className="heading">
+                    {/* <img src={ecellLogo} alt="E-Cell Logo" /> */}
+                    <h1>Contact Form</h1>
+                </div>
 
-        {selectedImage && (
-          <div className="image-preview">
-            <img src={selectedImage} alt="Selected Preview" />
-          </div>
-        )}
+                <label className="label">Name</label>
+                <input
+                    type="text"
+                    placeholder="Name"
+                    onChange={(event) => {
+                        setName(event.target.value);
+                    }}
+                    required />
 
-        <button type="submit" className="submit button">Submit</button>
-      </form>
-    </>
-  );
+                <label className="label">Email</label>
+                <input type="email"
+                    placeholder="Email"
+                    onChange={(event) => {
+                        setEmail(event.target.value);
+                    }}
+                    required />
+
+                <label className="label">Contact No.</label>
+                <input
+                    type="text"
+                    placeholder="Contact No."
+                    onChange={(event) => {
+                        setContactNo(event.target.value);
+                    }}
+                    required />
+
+                <label className="label" required>Branch</label>
+                <select placeholder="Branch" value={Branch}
+                    onChange={(event) => {
+                        setBranch(event.target.value);
+                    }}>
+                    <option value="">Select Branch</option>
+                    <option value="Mathematics & Computing">Mathematics & Computing</option>
+                    <option value="Computer Science & Engg.">Computer Science & Engg.</option>
+                    <option value="Electrical Engineering">Electrical Engineering</option>
+                    <option value="Electronics Engineering">Electronics Engineering</option>
+                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                    <option value="Chemical Engineering">Chemical Engineering</option>
+                    <option value="Ceramic Engineering">Ceramic Engineering</option>
+                    <option value="Pharmaceutical Engineering">Pharmaceutical Engineering</option>
+                    <option value="Civil Engineering">Civil Engineering</option>
+
+                </select>
+
+                <label className="label">Image</label>
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                />
+
+                <button type="submit" className="submit button"
+                    onClick={handleSubmit}>Submit</button>
+            </form>
+        </>
+    );
 };
 
 export default Contact;

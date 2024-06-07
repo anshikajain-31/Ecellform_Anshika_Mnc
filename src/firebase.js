@@ -1,20 +1,16 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore} from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-
 const firebaseConfig = {
-  apiKey: "AIzaSyDLvcYYrBJwVfZNWE2KPL1L-RQE0zI5uHM",
-  authDomain: "formecell-78144.firebaseapp.com",
-  projectId: "formecell-78144",
-  storageBucket: "formecell-78144.appspot.com",
-  messagingSenderId: "431241730233",
-  appId: "1:431241730233:web:e8988916096c9af0062368"
+  apiKey: "AIzaSyBG09yH4MmJegbDIjUMcicfwjNIg6xZVSo",
+  authDomain: "formecell02.firebaseapp.com",
+  projectId: "formecell02",
+  storageBucket: "formecell02.appspot.com",
+  messagingSenderId: "695802884502",
+  appId: "1:695802884502:web:9ae9f1dbee46b1a2e72db7"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+export const app = initializeApp(firebaseConfig);
+export const db=getFirestore(app);
+export const storage = getStorage(app);
 
-// Initialize Storage
-const storage = getStorage(app);
-
-export { db, storage };

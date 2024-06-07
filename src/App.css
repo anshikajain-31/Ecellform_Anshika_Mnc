@@ -17,12 +17,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  grid-column: span 2; /* Adjust based on layout */
+  grid-column: span 2; 
 }
 
 .form img {
   margin-right: 10px;
-  height: 40px; /* Adjust size as needed */
+  height: 40px; 
 }
 
 .form label {
@@ -48,7 +48,7 @@
   border-radius: 4px;
   cursor: pointer;
   width: 100%;
-  grid-column: span 2; /* Make button span full width of form */
+  grid-column: span 2; 
 }
 
 .form button:hover {
